@@ -1,86 +1,123 @@
-notificationGui = Instance.new("ScreenGui")
-notificationGui.Name = "NotificationGui"
-notificationGui.Parent = game.Players.LocalPlayer.PlayerGui
-local notificationFrame = Instance.new("Frame")
-notificationFrame.Size = UDim2.new(0, 200, 0, 50)
-notificationFrame.Position = UDim2.new(0, 10, 1, -60)
-notificationFrame.AnchorPoint = Vector2.new(0, 1)
-notificationFrame.BackgroundColor3 = Color3.new(0, 0, 0)
-notificationFrame.BackgroundTransparency = 0.0
-notificationFrame.BorderSizePixel = 1
-notificationFrame.BorderColor3 = Color3.new(1, 1, 1)
-notificationFrame.Parent = notificationGui
-local notificationText = Instance.new("TextLabel")
-notificationText.Size = UDim2.new(1, -10, 1, -10)
-notificationText.Position = UDim2.new(0, 5, 0, 5)
-notificationText.BackgroundTransparency = 1
-notificationText.Text = "skid.ware Loaded!"
-notificationText.TextColor3 = Color3.new(1, 1, 1)
-notificationText.TextSize = 14
-notificationText.Font = Enum.Font.SourceSansBold
-notificationText.TextWrapped = true
-notificationText.Parent = notificationFrame
+local VisualsTabBox = Tabs.VisualsTab:AddLeftTabbox('Player Visuals')
+                local PlayerESPTab = VisualsTabBox:AddTab('Player ESP')
+                local GameESPTab = VisualsTabBox:AddTab("Game Esp")
 
-local NotificationDuration = 3
-local function RemoveNotification()
-    notificationGui:Destroy()
-end
-wait(NotificationDuration)
-RemoveNotification()
+                local ChamsTabBox = Tabs.VisualsTab:AddRightTabbox('Chams')
+                local ChamsTab = ChamsTabBox:AddTab('Chams')
 
-local BoxESP = {}
-function BoxESP.Create(Player)
-    local Box = Drawing.new("Square")
-    Box.Visible = false
-    Box.Color = Color3.fromRGB(81, 44, 168)
-    Box.Filled = false
-    Box.Transparency = 0.50
-    Box.Thickness = 3
+                --// Player ESP
+                do
+                    PlayerESPTab:AddToggle('PlayerESP_Toggle', {Text = 'Toggle', Default = false}):OnChanged(function()
+                        esp.enabled = Toggles.PlayerESP_Toggle.Value
+                    end)
 
-    local Updater
+                    --//Name ESP
+                    do
+                        PlayerESPTab:AddToggle('PlayerESP_NameToggle', {Text = 'Name', Default = false}):AddColorPicker("PlayerESP_NameColor", {Default = Color3.fromRGB(255, 255, 255)}):OnChanged(function()
+                            esp.settings.name.enabled = Toggles.PlayerESP_NameToggle.Value
+                        end)
 
-    local function UpdateBox()
-        if Player and Player:IsA("Model") and Player:FindFirstChild("HumanoidRootPart") and Player:FindFirstChild("Head") then
-            local Target2dPosition, IsVisible = workspace.CurrentCamera:WorldToViewportPoint(Player.HumanoidRootPart.Position)
-            local scale_factor = 1 / (Target2dPosition.Z * math.tan(math.rad(workspace.CurrentCamera.FieldOfView * 0.5)) * 2) * 100
-            local width, height = math.floor(40 * scale_factor), math.floor(62 * scale_factor)
+                        Options.PlayerESP_NameColor:OnChanged(function()
+                            esp.settings.name.color = Options.PlayerESP_NameColor.Value
+                        end)
+                    end
 
-            Box.Visible = IsVisible
-            Box.Size = Vector2.new(width, height)
-            Box.Position = Vector2.new(Target2dPosition.X - Box.Size.X / 2, Target2dPosition.Y - Box.Size.Y / 2)
-        else
-            Box.Visible = false
-            if not Player then
-                Box:Remove()
-                Updater:Disconnect()
-            end
-        end
-    end
+                    --//Box ESP
+                    do
+                        PlayerESPTab:AddToggle('PlayerESP_BoxToggle', {Text = 'Box', Default = false}):AddColorPicker("PlayerESP_BoxColor", {Default = Color3.fromRGB(255, 255, 255)}):OnChanged(function()
+                            esp.settings.box.enabled = Toggles.PlayerESP_BoxToggle.Value
+                        end)
 
-    Updater = game:GetService("RunService").RenderStepped:Connect(UpdateBox)
+                        Options.PlayerESP_BoxColor:OnChanged(function()
+                            esp.settings.box.color = Options.PlayerESP_BoxColor.Value
+                        end)
+                    end
 
-    return Box
-end
+                    --//Filled Box ESP
+                    do
+                        PlayerESPTab:AddToggle('PlayerESP_FilledBoxToggle', {Text = 'Filled Box', Default = false}):AddColorPicker("PlayerESP_FilledBoxColor", {Default = Color3.fromRGB(255, 255, 255)}):OnChanged(function()
+                            esp.settings.filledbox.enabled = Toggles.PlayerESP_FilledBoxToggle.Value
+                        end)
 
-local Boxes = {}
+                        Options.PlayerESP_FilledBoxColor:OnChanged(function()
+                            esp.settings.filledbox.color = Options.PlayerESP_FilledBoxColor.Value
+                            print("yes")
+                        end)
 
-local function EnableBoxESP()
-    for _, Player in pairs(game:GetService("Workspace"):GetChildren()) do
-        if Player:IsA("Model") and Player:FindFirstChild("HumanoidRootPart") and Player:FindFirstChild("Head") then
-            local Box = BoxESP.Create(Player)
-            table.insert(Boxes, Box)
-        end
-    end
-end
+                        PlayerESPTab:AddSlider('PlayerESP_FilledBoxTransparency', {Text = 'fill transparency', Default = 1, Min = 0, Max = 1, Rounding = 2, Compact = true}):OnChanged(function()
+                            esp.settings.filledbox.transparency = Options.PlayerESP_FilledBoxTransparency.Value
+                        end)
+                    end
 
-game.Workspace.DescendantAdded:Connect(function(i)
-    if i:IsA("Model") and i:FindFirstChild("HumanoidRootPart") and i:FindFirstChild("Head") then
-        local Box = BoxESP.Create(i)
-        table.insert(Boxes, Box)
-    end
-end)
+                    --//Health ESP
+                    do
+                        --// Health Bar
 
-EnableBoxESP()
+                        PlayerESPTab:AddToggle('PlayerESP_HealthBarToggle', {Text = 'Health Bar', Default = false}):OnChanged(function()
+                            esp.settings.healthbar.enabled = Toggles.PlayerESP_HealthBarToggle.Value
+                        end)
+
+                        --// Health Text
+
+                        PlayerESPTab:AddToggle('PlayerESP_HealthTextToggle', {Text = 'Health Text', Default = false}):AddColorPicker("PlayerESP_HealthTextColor", {Default = Color3.fromRGB(255, 255, 255)}):OnChanged(function()
+                            esp.settings.healthtext.enabled = Toggles.PlayerESP_HealthTextToggle.Value
+                        end)
+
+                        Options.PlayerESP_HealthTextColor:OnChanged(function()
+                            esp.settings.healthtext.color = Options.PlayerESP_HealthTextColor.Value
+                        end)
+                    end
+
+                    --//View Angle ESP
+                    do
+                        PlayerESPTab:AddToggle('PlayerESP_ViewAngleToggle', {Text = 'View Angle', Default = false}):AddColorPicker("PlayerESP_ViewAngleColor", {Default = Color3.fromRGB(255, 255, 255)}):OnChanged(function()
+                            esp.settings.viewangle.enabled = Toggles.PlayerESP_ViewAngleToggle.Value
+                        end)
+
+                        Options.PlayerESP_ViewAngleColor:OnChanged(function()
+                            esp.settings.viewangle.color = Options.PlayerESP_ViewAngleColor.Value
+                        end)
+                    end
+
+                    PlayerESPTab:AddDivider()
+
+                    --// Settings
+                    do
+                        PlayerESPTab:AddToggle('PlayerESP_DisplayNames', {Text = 'Display Names', Default = false}):OnChanged(function()
+                            esp.settings.name.displaynames = Toggles.PlayerESP_DisplayNames.Value
+                        end)
+
+                        PlayerESPTab:AddToggle('PlayerESP_Outlines', {Text = 'Outlines', Default = false}):OnChanged(function()
+                            for i,v in pairs(esp.settings) do
+                                v.outline = Toggles.PlayerESP_Outlines.Value
+                            end
+                        end)
+
+                        PlayerESPTab:AddToggle('PlayerESP_HideFriendlies', {Text = 'Hide Teammates', Default = false}):OnChanged(function()
+                            esp.teamcheck = Toggles.PlayerESP_HideFriendlies.Value
+                        end)
+
+                        PlayerESPTab:AddSlider('PlayerESP_FontSize', {Text = 'Font Size', Default = 13, Min = 0, Max = 100, Rounding = 0, Compact = false}):OnChanged(function()
+                            esp.fontsize = Options.PlayerESP_FontSize.Value
+                        end)
+
+                        PlayerESPTab:AddDropdown('PlayerESP_FontFamily', {Values = { 'UI', 'System', 'Plex', 'Monospace' }, Default = 3, Multi = false, Text = 'Font Family'}):OnChanged(function()
+                            if Options.PlayerESP_FontFamily.Value == "UI" then
+                                esp.font = 0
+                            elseif Options.PlayerESP_FontFamily.Value == "System" then
+                                esp.font = 1
+                            elseif Options.PlayerESP_FontFamily.Value == "Plex" then
+                                esp.font = 2
+                            elseif Options.PlayerESP_FontFamily.Value == "Monospace" then
+                                esp.font = 3
+                            end
+                        end)
+
+                        PlayerESPTab:AddSlider('PlayerESP_HealthBarSize', {Text = 'Health Bar Size', Default = 3, Min = 1, Max = 5, Rounding = 0, Compact = false}):OnChanged(function()
+                            esp.settings.healthbar.size = Options.PlayerESP_HealthBarSize.Value
+                        end)
+                    end
+                end
 
 local SelectPart = "Head"
 local HBSizeX = 8
